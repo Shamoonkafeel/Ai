@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatBot</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#d1d7db;display:flex;justify-content:center;align-items:center;height:100vh;}
+.chat-wrapper{width:100%;max-width:400px;height:100vh;display:flex;flex-direction:column;background:#ece5dd;box-shadow:0 0 15px rgba(0,0,0,0.3);position:relative;overflow:hidden;}
+.chat-background{position:absolute;top:0;left:0;width:100%;height:100%;background-image:url("https://i.ibb.co/8NNw5F7/whatsapp-bg.png");background-size:cover;background-repeat:repeat;opacity:.2;z-index:0;}
+.chat-header{background:#075e54;color:#fff;padding:12px;text-align:center;font-size:18px;font-weight:bold;z-index:2;animation:fadeIn 1.5s forwards;position:relative;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+#chat{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;z-index:1;}
+.msg{padding:8px 12px;border-radius:18px;margin:5px 0;max-width:75%;font-size:14px;line-height:1.3em;}
+.user{background:#dcf8c6;align-self:flex-end;}
+.bot{background:#fff;align-self:flex-start;font-family:'Poppins',sans-serif;font-size:15px;line-height:1.5;color:#222;}
+.typing{font-style:italic;color:gray;font-size:12px;margin:4px;}
+.chat-input{display:flex;align-items:center;padding:6px;background:#fff;border-top:1px solid #ccc;z-index:2;}
+.chat-input input{flex:1;padding:8px 12px;border:none;border-radius:20px;outline:none;margin:0 8px;font-size:14px;}
+.chat-input button{background:none;border:none;font-size:20px;cursor:pointer;color:#075e54;}
+#emoji-panel{position:absolute;bottom:-200px;left:0;right:0;height:200px;background:#fff;border-top:1px solid #ccc;display:flex;flex-wrap:wrap;overflow-y:auto;padding:6px;transition:bottom .3s ease-in-out;font-size:22px;z-index:1000;}
+#emoji-panel span{cursor:pointer;margin:4px;}
+#emoji-panel.show{bottom:60px;}
+.footer{background:#075e54;color:#fff;text-align:center;padding:6px;font-size:12px;z-index:2;}
+.footer a{margin:0 6px;text-decoration:none;color:#fff;font-size:16px;}
+#refreshBtn {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: #25D366; /* WhatsApp green style */
+    border: none;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    transition: background 0.3s, transform 0.2s;
+}
+#refreshBtn:hover {
+    background: #1ebe57;
+    transform: translateY(-2px);
+}
+</style>
+</head>
+<body>
+<div class="chat-wrapper">
+  <div class="chat-background"></div>
+  <div class="chat-header">
+    🤖Design by Shamoon
+    <button id="refreshBtn">Refresh</button>
+  </div>
+  <div id="chat">
+    <div class='msg bot' style='text-align:center;font-weight:bold;'>Hello Sir</div>
+  </div>
+  <div id="emoji-panel"></div>
+  <div class="chat-input">
+    <button id="emojiBtn"><i class="fa-regular fa-face-smile"></i></button>
+    <button id="cameraBtn"><i class="fa-solid fa-camera"></i></button>
+    <input id="input" type="text" placeholder="Type a message..." />
+    <button id="voiceBtn"><i class="fa-solid fa-microphone"></i></button>
+    <button id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+  </div>
+  <div class="footer">
+    Powered by <b>Shamoon Kafeel</b><br>
+    <a href="https://instagram.com/" target="_blank"><i class="fab fa-instagram"></i></a>
+    <a href="https://wa.me/923000000000" target="_blank"><i class="fab fa-whatsapp"></i></a>
+  </div>
+</div>
+
+<script>
+const input=document.getElementById("input"),chat=document.getElementById("chat"),emojiPanel=document.getElementById("emoji-panel"),emojis="😀😁😂🤣😃😄😅😉😊😍😘😜🤔😎😢😭😡😱👍🙏👏🔥❤️💔✨⭐🎉🎶⚽🍕🍔🍟🍎🍩🍫🍻☕🚗✈️🏠📱💻🎁💡📷".split("");emojis.forEach(e=>{const span=document.createElement("span");span.textContent=e;span.onclick=()=>{input.value+=e;hideEmojiPanel()};emojiPanel.appendChild(span)});document.getElementById("emojiBtn").onclick=()=>{emojiPanel.classList.toggle("show")};function hideEmojiPanel(){emojiPanel.classList.remove("show")}input.addEventListener("keypress",e=>{"Enter"===e.key&&sendMessage()});document.getElementById("sendBtn").onclick=sendMessage;async function sendMessage(){const e=input.value.trim();if(!e)return;chat.innerHTML+=`<div class='msg user'>${e}</div>`,input.value="",hideEmojiPanel(),chat.scrollTop=chat.scrollHeight;const t=document.createElement("div");t.className="typing",t.innerText="Bot is typing...",chat.appendChild(t),chat.scrollTop=chat.scrollHeight;try{const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:[{role:"system",content:"Tum ek helpful assistant ho jo Roman Urdu me jawab deta hai."},{role:"user",content:e}]})}),n=await r.json(),o=n.reply||"Error in reply";t.remove(),chat.innerHTML+=`<div class='msg bot'>${o}</div>`,chat.scrollTop=chat.scrollHeight}catch(e){t.remove(),chat.innerHTML+=`<div class='msg bot'>API Error 😢</div>`}}document.getElementById("cameraBtn").onclick=()=>alert("Camera feature coming soon 📷"),document.getElementById("voiceBtn").onclick=()=>{if(!("webkitSpeechRecognition"in window))return alert("Speech not supported.");const e=new webkitSpeechRecognition;e.lang="ur-PK",e.start(),e.onresult=t=>input.value+=t.results[0][0].transcript};
+
+// Refresh button functionality
+document.getElementById("refreshBtn").onclick = () => {
+    chat.innerHTML = `<div class='msg bot' style='text-align:center;font-weight:bold;'>Salam</div>`;
+    chat.scrollTop = chat.scrollHeight;
+};
+</script>
+</body>
+</html>
